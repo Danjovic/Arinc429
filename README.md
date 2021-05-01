@@ -39,6 +39,6 @@ Interrupt driven Arinc429 transmit code for use with  [HOLT IC](https://www.holt
 ![1 bit processing time](doc/singlebit.png "1 bit processing time")
 
 ##### Scheduler in action
-![Scheduler in action](doc/schedule.png "Scheduler in action")
+![Scheduler in action](doc/scheduler.png "Scheduler in action")
 
 
