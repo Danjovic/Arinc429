@@ -1,6 +1,28 @@
 # Arinc429
 Arinc 429 related projects
 
+## Arinc 429 RX / MONITOR
+
+Interrupt driven Arinc429 receiver code for use with  [HOLT IC](https://www.holtic.com/) line receiver [HI-8588](http://www.holtic.com/documents/76-hi-8588_v-rev-epdf.do).
+
+### Features:
+- ATMega88/328 based
+- Text based User Interface
+- Display labels of the messages
+- Shows information of a message with an specific label or all messages
+- Message interval meter (1m resolution)
+- Data fields can be displayed in either binary or hexadecimal format
+- Line load measurement
+- Verbose level selection  
+- Released under [GPL V3](https://www.gnu.org/licenses/gpl-3.0.html);
+
+### Connections
+|  AVR  |  HI-8588 pin  |
+| ----------- | ----------- |
+|  PD2/INT0  |  ROUTB (7)  |
+|  PD3/INT1  |  ROUTA (6)  | 
+
+
 ## Arinc 429 TX
 
 Interrupt driven Arinc429 transmit code for use with  [HOLT IC](https://www.holtic.com/)  drivers [HI-8585/HI-8586](http://www.holtic.com/documents/85-hi-8585_v-rev-ppdf.do).
