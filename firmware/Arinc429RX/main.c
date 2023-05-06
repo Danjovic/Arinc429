@@ -1,15 +1,14 @@
 /*
 
   Arinc 429 Sniffer
-  (C) Daniel José Viana, 2013-2017
+  Danjovic, 2013-2017
   
   V1.1 - 23/05/2017
   - Corrected Timeout for 320us as in Arinc 429 low speed standard
 
   V1.2 - 27/11/2017
   - Added measurement of line load
-
-
+  
 */
 
 #include <avr/io.h>
@@ -273,20 +272,7 @@ int main (void)
 		          config_mode |= 0x02; // Set   bit 1
                   eeprom_write_byte ((uint8_t *)EEPROM_CONFIG_ADDRESS, config_mode);
 				  break;
-/*
-        case 'd': if (__verbose) printf_P(PSTR("\nBCD Mode"));
-		          config_mode &= 0xfd; // clear bit 1
-		          config_mode |= 0x01; // Set   bit 0
-                  eeprom_write_byte ((uint8_t *)EEPROM_CONFIG_ADDRESS, config_mode);
-				  break;
 
-
-
-        case 'o': if (__verbose) printf_P(PSTR("\nOctal Mode"));
-		          config_mode |= 0x03; // set bits 0 and 1
-                  eeprom_write_byte ((uint8_t *)EEPROM_CONFIG_ADDRESS, config_mode);
-				  break;
-*/
         /* Operation */
 
         case 's': Acquire_labels(SNIFF);
@@ -573,32 +559,13 @@ void Print_Message(void)
 			  }
 	          if (__verbose)  printf_P(PSTR(" Bin"));
 			  break;
-/*            case 1: // BCD
 
-	          for (i=0;i<5;i++) {
-                j= (uint8_t)databits & 0x0f;
-				if (j<10) s[4-i]=j+'0'; else s[4-i]='#';
-				databits >>=4;
-			  }
-
-	 		  for (i=0;i<5;i++) {           // puts() nao foi usado porque acrescenta
-	 		    putc(s[i],&usart0_str);     // um <cr> ao final
-	 		  }
-
-	          if (__verbose)  printf_P(PSTR(" BCD"));
-			  break;
-*/
 
 	   case 2: // Hexadecimal
               printf("%05lX",databits);
 	          if (__verbose)  printf_P(PSTR(" Hexa"));
 
 			  break;
-/*	   case 3: // Octal
-              printf("%07lo",databits);
-	          if (__verbose)  printf_P(PSTR(" Octal"));
-			  break;
-*/
 
 	 }
 
