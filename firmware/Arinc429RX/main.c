@@ -8,6 +8,10 @@
 
   V1.2 - 27/11/2017
   - Added measurement of line load
+
+  V1.21 - 21/06/2026
+  - fixed measurement of line load
+  
   
 */
 
@@ -56,7 +60,7 @@ void start_captpure(void);
 void Print_Message(void);
 uint8_t Input_label(void);
 uint8_t bitwise_reverse ( uint8_t label);
-inline void Timeout_Timer_restart (void);
+static inline void Timeout_Timer_restart (void);
 uint8_t Measure_Load(void);
 
 //
@@ -226,7 +230,7 @@ int main (void)
   InitIO();                     // Init I/O pins
   InitTimers_and_Interrupts();  // set 1ms tick counter and 512us timeout counter
 
-  printf_P(PSTR("\nArinc 429 sniffer (c)2013 by Daniel Jose Viana"));
+  printf_P(PSTR("\nArinc 429 sniffer (c)2013-2026 by Daniel Jose Viana"));
 
   /* Main Loop */
   while(1)
@@ -245,7 +249,7 @@ int main (void)
 	  {
 
         /* Output */
-		case 'p': printf_P(PSTR("\n\nArinc 429 sniffer V1.2 (c)2013-2017 by Daniel Jose Viana"));
+		case 'p': printf_P(PSTR("\n\nArinc 429 sniffer V1.2 (c)2013-2026 by Daniel Jose Viana"));
 		          printf_P(PSTR("\nOutput:\nV - Set Verbose Mode\nQ - Set Quiet Mode"));
 				  printf_P(PSTR("\n\nData bits view format:\nB - Binary\nH - Hexadecimal"));
 		          printf_P(PSTR("\n\nOperation:\nS - Show labels of incoming Messages\nT - Track Messages from a supplied label\nA - Show all Messages\nL - Measure line load"));
@@ -606,9 +610,8 @@ inline void Timeout_Timer_restart (void) {
 //
 uint8_t Measure_Load(void){
 
-	uint16_t ON_Time  = 0;  // Marcadores de ciclo ativo
-	uint16_t OFF_Time = 0;
-	double Load_percent = 0;
+	static uint16_t ON_Time  = 0;  // Marcadores de ciclo ativo
+	static uint16_t OFF_Time = 0;
 	uint8_t c;
 
 	if (__verbose) printf_P(PSTR("\nMeasuring Traffic Load..."));
@@ -623,46 +626,50 @@ uint8_t Measure_Load(void){
 
 	for(;;) {
 
+    // Aguarda ate completar 100us
+    while (!(TIFR0 & (1<<OCF0A)) ) ;
+    TIFR0 |= (1<<OCF0A);             // Limpa flag
+
+    //  Mede  
+    if (EIFR) { // Chegou algum bit durante o periodo de amostragem ?
+      // Sim
+      EIFR = (1<<INTF1) | (1<<INTF0) ;   // limpa flags
+      ON_Time++;
+      
+    } else {     
+      // Nao
+      OFF_Time++;     
+    }    
+
 		// Se alguma tecla pressionada, checa se é para sair
 		if (kbhit()){
 			c=getchar();
 			if (c==27 || c==' ') {
 				if (__verbose) printf_P(PSTR("\nexiting..."));
 				// Restaura estado do Timer 0
+       TCCR0A = 0;
 				TCCR0B = ((1 << CS00) | (1 << CS01)); // Prescaler = 64
 				OCR0A  = 0xf9;
-
 
 				return 0;
 			}
 		}  //if kbhit
 
-		//  Mede  
-		if (EIFR) { // Chegou algum bit durante o periodo de amostragem ?
-			// Sim
-			EIFR = (1<<INTF1) | (1<<INTF0) ;   // limpa flags
-			ON_Time++;
-			
-		} else {     
-			// Nao
-			OFF_Time++;			
-		}		
+		
 		
 		// Exibe resultado
 		if ( (ON_Time + OFF_Time) == 10000 ) {  // 1 segundo em intervalos de 100us
-			printf_P(PSTR("\nLoad: "));
-			if (__verbose) Load_percent = (double)ON_Time / 100 ;  // ON*100/10000
-			printf("%.2f%%", Load_percent);
-			//if (__verbose) printf_P(PSTR("%%"));
+			if (__verbose)      printf_P(PSTR("\nLoad: "));
+      uint16_t integer_load = ON_Time / 100;
+      uint16_t fractional_load = ON_Time % 100;
+      			
+			printf("%d.%d%%", integer_load, fractional_load);
 			ON_Time  = 0;  //        Reinicia valores
 			OFF_Time = 0;
 			TCNT0 = 0;
 		}
 		
-		// Aguarda ate completar 100us
-		while (!(TIFR0 & (1<<TOV0)) ) ;
-		TIFR0 |= (1<<TOV0);             // Limpa flag
+
 
 	} // for(;;)
 }
-
