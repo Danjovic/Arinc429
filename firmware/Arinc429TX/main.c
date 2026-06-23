@@ -72,12 +72,12 @@ typedef struct  {  // Data Queue circular buffer
   uint8_t oldest_index;
 } Buffer;
 
-typedef struct  {
-  unsigned parity :  1;
-  unsigned ssm    :  2;
-  unsigned long data   : 19;
-  unsigned sdi    :  2;
-  unsigned label  :  8; // em ordem reversa (rawdata)
+typedef struct {
+  unsigned label : 8;  // em ordem reversa (rawdata)
+  unsigned sdi : 2;
+  unsigned long data : 19;
+  unsigned ssm : 2;
+  unsigned parity : 1;
 } arinc429Word;
 
 typedef union  {
