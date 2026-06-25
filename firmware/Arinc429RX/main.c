@@ -12,8 +12,11 @@
   V1.21 - 21/06/2026
   - fixed measurement of line load
   - fixed display of parity
-  - reduced charcters printed on screen in verbose mode
-  
+  - reduced charcters prinsmall fixested on screen in verbose mode
+
+  V1.22- 24/06/2026
+  - display timestamp instead delta time in "A" mode
+
 */
 
 #include <avr/io.h>
@@ -22,6 +25,7 @@
 #include <avr/pgmspace.h>
 #include <avr/eeprom.h>
 #include <ctype.h>
+#include <stdbool.h>
 
 // definitions
 #define EEPROM_CONFIG_ADDRESS 1
@@ -58,7 +62,7 @@ void InitIO(void);
 uint8_t Track_label(uint8_t label);
 uint8_t Acquire_labels(uint8_t display_option);
 void start_captpure(void);
-void Print_Message(void);
+void Print_Message(bool showDeltaTime);
 uint8_t Input_label(void);
 uint8_t bitwise_reverse(uint8_t label);
 static inline void Timeout_Timer_restart(void);
@@ -477,12 +481,12 @@ uint8_t Acquire_labels(uint8_t display_option) {
 
         case TRACK:
           if (p_getb->word_arinc.bytes.byte0 == bitwise_reverse(label_to_track)) {
-            Print_Message();  // se chegou uma mensagem com o label desejado, imprime os dados
+            Print_Message(true);  // se chegou uma mensagem com o label desejado, imprime os dados
           }
           break;
 
         case FORWARD:
-          Print_Message();  // se chegou uma mensagem com o label desejado, imprime os dados
+          Print_Message(false);  // se chegou uma mensagem com o label desejado, imprime os dados
           break;
       }  // switch
 
@@ -505,7 +509,7 @@ uint8_t Acquire_labels(uint8_t display_option) {
 //
 // Imprime as mensagens que correspondem ao label desejado. Calcula o intervalo de acordo com o timestamp
 //
-void Print_Message(void) {
+void Print_Message(bool showDeltaTime) {
   uint8_t i;  //,j;
               //   char s[5];             // string
 
@@ -588,15 +592,24 @@ void Print_Message(void) {
   putc(' ', &usart0_str);
 
   // print Timestamp
-  if (__verbose) printf_P(PSTR("Rate:"));
 
-  if (delta_t <= 5000)
-    printf("%04u", delta_t);
-  else
-    printf_P(PSTR("XXXX"));
+  if (showDeltaTime) { // print delta time
+    if (__verbose) printf_P(PSTR("Rate:"));
+    if (delta_t <= 5000)
+      printf("%04u", delta_t);
+    else
+      printf_P(PSTR("XXXX"));
+    if (__verbose) printf_P(PSTR("ms"));
 
-  if (__verbose) printf_P(PSTR("ms"));
-  putc(' ', &usart0_str);
+  } else {  // print timestamp
+
+    if (__verbose) printf_P(PSTR("time:"));
+    printf("%05u", time_now);
+    if (__verbose) printf_P(PSTR(" ms"));
+  }
+
+
+  // putc(' ', &usart0_str);
 }
 
 
